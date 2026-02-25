@@ -8,7 +8,6 @@ const port = process.env.PORT;
 app.set("views", "./views");
 app.set("view engine", "pug");
 
-// Routes
 route(app);
 
 app.listen(port, () => {
