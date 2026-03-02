@@ -1,22 +1,14 @@
 const Product = require("../../models/product.model");
+const filterStatusHelper = require("../../helpers/filterStatus");
 
 // [GET] /admin/product
 module.exports.index = async (req, res) => {
 
-    // ===== 1. Khởi tạo bộ lọc trạng thái =====
-    let filterStatus = [
-        { name: "Tất cả", status: "", class: "" },
-        { name: "Hoạt động", status: "active", class: "" },
-        { name: "Dừng hoạt động", status: "inactive", class: "" },
-    ];
-
-    // ===== 2. Xác định trạng thái đang được chọn =====
+    // ===== 1. Lấy status từ query =====
     const currentStatus = req.query.status || "";
 
-    const index = filterStatus.findIndex(item => item.status === currentStatus);
-    if (index !== -1) {
-        filterStatus[index].class = "active";
-    }
+    // ===== 2. Gọi helper =====
+    const filterStatus = filterStatusHelper(req.query);
 
     // ===== 3. Tạo điều kiện query DB =====
     let find = {
@@ -31,19 +23,18 @@ module.exports.index = async (req, res) => {
     let keyword = (req.query.keyword || "").trim();
 
     if (keyword) {
-        // escape regex để tránh lỗi ký tự đặc biệt
         const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
         find.title = {
             $regex: escapedKeyword,
-            $options: "i" // không phân biệt hoa thường
+            $options: "i"
         };
     }
 
-    // ===== 5. Lấy dữ liệu từ database =====
+    // ===== 5. Lấy dữ liệu =====
     const products = await Product.find(find);
 
-    // ===== 6. Render view =====
+    // ===== 6. Render =====
     res.render("admin/pages/products/index", {
         pageTitle: "Danh sach san pham",
         products,
