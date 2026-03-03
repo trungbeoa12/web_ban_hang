@@ -2,6 +2,7 @@ extends ../../layouts/default.pug
 include ../../mixins/filter-status.pug
 include ../../mixins/search.pug
 include ../../mixins/pagination.pug
+include ../../mixins/bulk-change-status.pug
 
 block main
   h1 Trang danh sách sản phẩm
@@ -18,9 +19,15 @@ block main
   .card.mb-3
     .card-header Danh Sách
     .card-body
+
+      // Bulk change form
+      +bulkChangeStatus(`${prefixAdmin}/products/change-multi?_method=PATCH`)
+
       table.table.table-bordered
         thead
           tr
+            th
+              input(type="checkbox" id="check-all")
             th STT
             th Hình ảnh
             th Tiêu đề
@@ -30,15 +37,13 @@ block main
         tbody
           each item, index in products
             tr
+              td
+                input(type="checkbox" name="id" value=item._id class="check-item")
               td #{index + 1}
-
               td
                 img(src=item.thumbnail alt=item.title width="100px")
-
               td #{item.title}
-
               td #{item.price}$
-
               td
                 if item.status == "active"
                   a.badge.badge-success(
@@ -48,26 +53,25 @@ block main
                     button-change-status
                   ) Hoạt động
                 else
-                  a.badge.badge-danger.button-change-status(
+                  a.badge.badge-danger(
                     href="javascript:;"
                     data-status=item.status
                     data-id=item._id
                     button-change-status
                   ) Dừng Hoạt động
-
               td
                 button.btn.btn-warning.btn-sm Sửa
                 button.btn.btn-danger.btn-sm.ml-1 Xóa
 
-  // Pagination (PHẢI ở trong block main)
   +pagination(pagination, status, keyword)
 
-  // tạo form ẩn
+  // Form ẩn change status 1 sản phẩm
   form(
     action=""
     method="POST"
     id="form-change-status"
-    data-path=`${prefixAdmin}/products/change-status`)
+    data-path=`${prefixAdmin}/products/change-status`
+  )
 
 block scripts
   script(src="/admin/js/product.js")

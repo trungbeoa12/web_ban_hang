@@ -70,3 +70,40 @@ module.exports.changeStatus = async (req, res) => {
     return res.status(500).send("Server Error");
   }
 };
+
+
+// [PACTH] /admin/products/change-multi
+module.exports.changeMulti = async (req, res) => {
+  try {
+    const type = (req.body.type || "").trim();
+    const idsRaw = (req.body.ids || "").trim();
+
+    const allowedStatus = new Set(["active", "inactive"]);
+    if (!allowedStatus.has(type)) {
+      return res.status(400).send("Invalid status type");
+    }
+
+    const ids = idsRaw
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
+
+    if (ids.length === 0) {
+      const backURL =
+        req.get("Referrer") || req.get("Referer") || "/admin/products";
+      return res.redirect(backURL);
+    }
+
+    await Product.updateMany(
+      { _id: { $in: ids }, deleted: false },
+      { status: type }
+    );
+
+    const backURL =
+      req.get("Referrer") || req.get("Referer") || "/admin/products";
+    return res.redirect(backURL);
+  } catch (error) {
+    console.error("changeMulti error:", error);
+    return res.status(500).send("Server Error");
+  }
+};

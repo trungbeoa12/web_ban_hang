@@ -1,0 +1,18 @@
+//- Mixin form đổi trạng thái nhiều sản phẩm
+mixin bulkChangeStatus(actionPath)
+  form(
+    action=actionPath
+    method="POST"
+    id="form-change-multi"
+  )
+    .d-flex.align-items-start.mb-3
+      .form-group.mr-2
+        select(name="type" class="form-control")
+          option(value="active") Hoạt động
+          option(value="inactive") Dừng hoạt động
+
+      // ids sẽ được JS đổ vào (nên để hidden)
+      input(type="hidden" name="ids" value="")
+
+      button(type="submit" class="btn btn-primary") Áp dụng
+

@@ -16,6 +16,9 @@ const port = process.env.PORT;
 
 app.use(methodOverride("_method"));
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 app.set("views", "./views");
 app.set("view engine", "pug");
 
