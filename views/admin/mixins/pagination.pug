@@ -1,0 +1,31 @@
+mixin pagination(pagination, status, keyword)
+  if pagination && pagination.totalPage > 1
+    - const currentPage = pagination.currentPage
+    - const totalPage = pagination.totalPage
+
+    // giữ query (status, keyword)
+    - const queryObj = {}
+    - if (status) queryObj.status = status
+    - if (keyword) queryObj.keyword = keyword
+
+    nav
+      ul.pagination
+        // Trang trước
+        li.page-item(class=(currentPage <= 1 ? "disabled" : ""))
+          - queryObj.page = currentPage - 1
+          a.page-link(
+            href=(currentPage <= 1 ? "javascript:void(0)" : ("?" + (new URLSearchParams(queryObj)).toString()))
+          ) Trang trước
+
+        // Các trang
+        - for (let p = 1; p <= totalPage; p++)
+          li.page-item(class=(p === currentPage ? "active" : ""))
+            - queryObj.page = p
+            a.page-link(href=("?" + (new URLSearchParams(queryObj)).toString())) #{p}
+
+        // Kế tiếp
+        li.page-item(class=(currentPage >= totalPage ? "disabled" : ""))
+          - queryObj.page = currentPage + 1
+          a.page-link(
+            href=(currentPage >= totalPage ? "javascript:void(0)" : ("?" + (new URLSearchParams(queryObj)).toString()))
+          ) Kế tiếp

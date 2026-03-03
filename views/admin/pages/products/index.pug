@@ -1,6 +1,7 @@
 extends ../../layouts/default.pug
 include ../../mixins/filter-status.pug
 include ../../mixins/search.pug
+include ../../mixins/pagination.pug
 
 block main
   h1 Trang danh sách sản phẩm
@@ -29,50 +30,44 @@ block main
         tbody
           each item, index in products
             tr
-              td #{index}
+              td #{index + 1}
+
               td
                 img(src=item.thumbnail alt=item.title width="100px")
+
               td #{item.title}
+
               td #{item.price}$
+
               td
-                if (item.status == "active")
-                  a.badge.badge-success Hoạt động
+                if item.status == "active"
+                  a.badge.badge-success(
+                    href="javascript:;"
+                    data-status=item.status
+                    data-id=item._id
+                    button-change-status
+                  ) Hoạt động
                 else
-                  a.badge.badge-danger Dừng Hoạt động
+                  a.badge.badge-danger.button-change-status(
+                    href="javascript:;"
+                    data-status=item.status
+                    data-id=item._id
+                    button-change-status
+                  ) Dừng Hoạt động
+
               td
                 button.btn.btn-warning.btn-sm Sửa
                 button.btn.btn-danger.btn-sm.ml-1 Xóa
 
   // Pagination (PHẢI ở trong block main)
-  if pagination && pagination.totalPage > 1
-    - const currentPage = pagination.currentPage
-    - const totalPage = pagination.totalPage
-    - const prevPage = currentPage - 1
-    - const nextPage = currentPage + 1
+  +pagination(pagination, status, keyword)
 
-    // giữ query (status, keyword)
-    - const queryObj = {}
-    - if (status) queryObj.status = status
-    - if (keyword) queryObj.keyword = keyword
+  // tạo form ẩn
+  form(
+    action=""
+    method="POST"
+    id="form-change-status"
+    data-path=`${prefixAdmin}/products/change-status`)
 
-    nav
-      ul.pagination
-        // Trang trước
-        li.page-item(class=(currentPage <= 1 ? "disabled" : ""))
-          - queryObj.page = prevPage
-          a.page-link(
-            href=(currentPage <= 1 ? "javascript:void(0)" : ("?" + (new URLSearchParams(queryObj)).toString()))
-          ) Trang trước
-
-        // Các trang
-        - for (let p = 1; p <= totalPage; p++)
-          li.page-item(class=(p === currentPage ? "active" : ""))
-            - queryObj.page = p
-            a.page-link(href=("?" + (new URLSearchParams(queryObj)).toString())) #{p}
-
-        // Kế tiếp
-        li.page-item(class=(currentPage >= totalPage ? "disabled" : ""))
-          - queryObj.page = nextPage
-          a.page-link(
-            href=(currentPage >= totalPage ? "javascript:void(0)" : ("?" + (new URLSearchParams(queryObj)).toString()))
-          ) Kế tiếp
+block scripts
+  script(src="/admin/js/product.js")

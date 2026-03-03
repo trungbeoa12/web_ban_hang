@@ -3,7 +3,7 @@ const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
 
-// [GET] /admin/product
+// [GET] /admin/products
 module.exports.index = async (req, res) => {
   try {
     // ===== 1. Status =====
@@ -52,5 +52,21 @@ module.exports.index = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Server Error");
+  }
+};
+
+// [PACTH] /admin/products/change-status/:status/:id
+module.exports.changeStatus = async (req, res) => {
+  try {
+    const { status, id } = req.params;
+
+    await Product.updateOne({ _id: id }, { status });
+
+    // an toàn: có thì back, không thì về list
+    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products";
+    return res.redirect(backURL);
+  } catch (error) {
+    console.error("changeStatus error:", error);
+    return res.status(500).send("Server Error");
   }
 };
