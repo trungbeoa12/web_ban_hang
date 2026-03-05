@@ -72,16 +72,11 @@ module.exports.changeStatus = async (req, res) => {
 };
 
 
-// [PACTH] /admin/products/change-multi
+// [PATCH] /admin/products/change-multi (đổi trạng thái hoặc xóa nhiều)
 module.exports.changeMulti = async (req, res) => {
   try {
     const type = (req.body.type || "").trim();
     const idsRaw = (req.body.ids || "").trim();
-
-    const allowedStatus = new Set(["active", "inactive"]);
-    if (!allowedStatus.has(type)) {
-      return res.status(400).send("Invalid status type");
-    }
 
     const ids = idsRaw
       .split(",")
@@ -94,13 +89,27 @@ module.exports.changeMulti = async (req, res) => {
       return res.redirect(backURL);
     }
 
+    const backURL =
+      req.get("Referrer") || req.get("Referer") || "/admin/products";
+
+    if (type === "delete") {
+      await Product.updateMany(
+        { _id: { $in: ids }, deleted: false },
+        { deleted: true, deleteAt: new Date() }
+      );
+      return res.redirect(backURL);
+    }
+
+    const allowedStatus = new Set(["active", "inactive"]);
+    if (!allowedStatus.has(type)) {
+      return res.status(400).send("Invalid status type");
+    }
+
     await Product.updateMany(
       { _id: { $in: ids }, deleted: false },
       { status: type }
     );
 
-    const backURL =
-      req.get("Referrer") || req.get("Referer") || "/admin/products";
     return res.redirect(backURL);
   } catch (error) {
     console.error("changeMulti error:", error);

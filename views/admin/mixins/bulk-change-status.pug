@@ -7,9 +7,10 @@ mixin bulkChangeStatus(actionPath)
   )
     .d-flex.align-items-start.mb-3
       .form-group.mr-2
-        select(name="type" class="form-control")
+        select(name="type" class="form-control" id="select-bulk-action")
           option(value="active") Hoạt động
           option(value="inactive") Dừng hoạt động
+          option(value="delete") Xóa
 
       // ids sẽ được JS đổ vào (nên để hidden)
       input(type="hidden" name="ids" value="")

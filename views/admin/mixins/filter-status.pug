@@ -1,5 +1,11 @@
 mixin filter-status(filterStatus)
     each item in filterStatus
+        if item.isLink
+          a(
+            href=`${prefixAdmin}/products/trash`
+            class=`btn btn-sm ml-1 btn-outline-secondary ${item.class}`
+          ) #{item.name}
+        else
           button(
             class=`btn btn-sm ml-1 btn-outline-success ${item.class}`
             button-status=item.status

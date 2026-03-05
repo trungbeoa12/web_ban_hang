@@ -62,12 +62,21 @@ if (formChangeMulti) {
       .filter((x) => x.checked)
       .map((x) => x.value);
 
+    if (ids.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
     if (inputIds) {
       inputIds.value = ids.join(",");
     }
 
-    if (ids.length === 0) {
+    const selectBulk = formChangeMulti.querySelector("#select-bulk-action");
+    const type = selectBulk ? selectBulk.value : "";
+    if (type === "delete") {
       e.preventDefault();
+      if (!confirm("Bạn có chắc chắn muốn xóa các sản phẩm đã chọn?")) return;
+      formChangeMulti.submit();
     }
   });
 }
