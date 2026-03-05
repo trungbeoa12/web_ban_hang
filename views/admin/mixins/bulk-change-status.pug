@@ -1,16 +1,20 @@
-//- Mixin form đổi trạng thái nhiều sản phẩm
+//- Mixin form đổi trạng thái / vị trí / xóa nhiều sản phẩm
 mixin bulkChangeStatus(actionPath)
   form(
     action=actionPath
     method="POST"
     id="form-change-multi"
   )
-    .d-flex.align-items-start.mb-3
+    .d-flex.align-items-start.mb-3.flex-wrap
       .form-group.mr-2
         select(name="type" class="form-control" id="select-bulk-action")
           option(value="active") Hoạt động
           option(value="inactive") Dừng hoạt động
+          option(value="change-position") Thay đổi vị trí
           option(value="delete") Xóa
+
+      .form-group.mr-2(id="wrap-position-input" style="display: none;")
+        input(type="number" name="position" class="form-control" id="input-position" placeholder="Vị trí" min="0" step="1")
 
       // ids sẽ được JS đổ vào (nên để hidden)
       input(type="hidden" name="ids" value="")

@@ -34,8 +34,9 @@ module.exports.index = async (req, res) => {
       4
     );
 
-    // ===== 6. Lấy dữ liệu =====
+    // ===== 6. Lấy dữ liệu (sắp xếp theo position) =====
     const products = await Product.find(find)
+      .sort({ position: 1 })
       .limit(objectPagination.limitItems)
       .skip(objectPagination.skip);
 
@@ -46,7 +47,9 @@ module.exports.index = async (req, res) => {
       filterStatus,
       keyword: objectSearch.keyword,
       status: currentStatus,
-      pagination: objectPagination
+      pagination: objectPagination,
+      message: req.query.message || "",
+      type: req.query.type || "success"
     });
 
   } catch (error) {
@@ -61,10 +64,7 @@ module.exports.changeStatus = async (req, res) => {
     const { status, id } = req.params;
 
     await Product.updateOne({ _id: id }, { status });
-
-    // an toàn: có thì back, không thì về list
-    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products";
-    return res.redirect(backURL);
+    return res.redirect("/admin/products?message=Thay đổi trạng thái thành công&type=success");
   } catch (error) {
     console.error("changeStatus error:", error);
     return res.status(500).send("Server Error");
@@ -84,25 +84,30 @@ module.exports.changeMulti = async (req, res) => {
       .filter(Boolean);
 
     if (ids.length === 0) {
-      const backURL =
-        req.get("Referrer") || req.get("Referer") || "/admin/products";
-      return res.redirect(backURL);
+      return res.redirect("/admin/products?message=Không có sản phẩm nào được chọn&type=error");
     }
-
-    const backURL =
-      req.get("Referrer") || req.get("Referer") || "/admin/products";
 
     if (type === "delete") {
       await Product.updateMany(
         { _id: { $in: ids }, deleted: false },
         { deleted: true, deleteAt: new Date() }
       );
-      return res.redirect(backURL);
+      return res.redirect("/admin/products?message=Xóa sản phẩm thành công&type=success");
+    }
+
+    if (type === "change-position") {
+      const position = parseInt(req.body.position, 10);
+      const value = isNaN(position) ? 0 : position;
+      await Product.updateMany(
+        { _id: { $in: ids }, deleted: false },
+        { position: value }
+      );
+      return res.redirect("/admin/products?message=Thay đổi vị trí thành công&type=success");
     }
 
     const allowedStatus = new Set(["active", "inactive"]);
     if (!allowedStatus.has(type)) {
-      return res.status(400).send("Invalid status type");
+      return res.redirect("/admin/products?message=Kiểu thay đổi không hợp lệ&type=error");
     }
 
     await Product.updateMany(
@@ -110,7 +115,7 @@ module.exports.changeMulti = async (req, res) => {
       { status: type }
     );
 
-    return res.redirect(backURL);
+    return res.redirect("/admin/products?message=Thay đổi trạng thái hàng loạt thành công&type=success");
   } catch (error) {
     console.error("changeMulti error:", error);
     return res.status(500).send("Server Error");
@@ -126,8 +131,7 @@ module.exports.deleteItem = async (req, res) => {
       { deleted: true, deleteAt: new Date() }
     );
 
-    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products";
-    return res.redirect(backURL);
+    return res.redirect("/admin/products?message=Xóa sản phẩm thành công&type=success");
   } catch (error) {
     console.error("deleteItem error:", error);
     return res.status(500).send("Server Error");
@@ -148,6 +152,7 @@ module.exports.trash = async (req, res) => {
     const objectPagination = paginationHelper(req.query, countProducts, 4);
 
     const products = await Product.find(find)
+      .sort({ deleteAt: -1 })
       .limit(objectPagination.limitItems)
       .skip(objectPagination.skip);
 
@@ -155,7 +160,9 @@ module.exports.trash = async (req, res) => {
       pageTitle: "Thùng rác sản phẩm",
       products,
       keyword: objectSearch.keyword,
-      pagination: objectPagination
+      pagination: objectPagination,
+      message: req.query.message || "",
+      type: req.query.type || "success"
     });
   } catch (error) {
     console.error("trash error:", error);
@@ -172,8 +179,7 @@ module.exports.restoreItem = async (req, res) => {
       { deleted: false, deleteAt: null }
     );
 
-    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products/trash";
-    return res.redirect(backURL);
+    return res.redirect("/admin/products/trash?message=Khôi phục sản phẩm thành công&type=success");
   } catch (error) {
     console.error("restoreItem error:", error);
     return res.status(500).send("Server Error");

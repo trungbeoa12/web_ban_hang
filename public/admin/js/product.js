@@ -57,6 +57,16 @@ if (formChangeMulti) {
     item.addEventListener("change", syncCheckAll);
   });
 
+  const selectBulk = formChangeMulti.querySelector("#select-bulk-action");
+  const wrapPositionInput = formChangeMulti.querySelector("#wrap-position-input");
+  const inputPosition = formChangeMulti.querySelector("#input-position");
+
+  if (selectBulk && wrapPositionInput) {
+    selectBulk.addEventListener("change", () => {
+      wrapPositionInput.style.display = selectBulk.value === "change-position" ? "block" : "none";
+    });
+  }
+
   formChangeMulti.addEventListener("submit", (e) => {
     const ids = Array.from(checkItems)
       .filter((x) => x.checked)
@@ -71,12 +81,19 @@ if (formChangeMulti) {
       inputIds.value = ids.join(",");
     }
 
-    const selectBulk = formChangeMulti.querySelector("#select-bulk-action");
     const type = selectBulk ? selectBulk.value : "";
     if (type === "delete") {
       e.preventDefault();
       if (!confirm("Bạn có chắc chắn muốn xóa các sản phẩm đã chọn?")) return;
       formChangeMulti.submit();
+    }
+    if (type === "change-position") {
+      const pos = inputPosition ? inputPosition.value.trim() : "";
+      if (pos === "") {
+        e.preventDefault();
+        alert("Vui lòng nhập vị trí.");
+        return;
+      }
     }
   });
 }

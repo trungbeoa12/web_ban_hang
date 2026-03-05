@@ -1,0 +1,6 @@
+mixin alert(message, type)
+  if message
+    - const klass = type === 'error' ? 'danger' : 'success'
+    .alert(role="alert" class=`alert alert-${klass} mt-2`)
+      | #{message}
+

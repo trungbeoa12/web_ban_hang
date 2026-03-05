@@ -32,6 +32,7 @@ block main
             th Hình ảnh
             th Tiêu đề
             th Giá
+            th Vị trí
             th Trạng thái
             th Hành động
         tbody
@@ -44,6 +45,7 @@ block main
                 img(src=item.thumbnail alt=item.title width="100px")
               td #{item.title}
               td #{item.price}$
+              td #{item.position !== undefined && item.position !== null && item.position !== "" ? item.position : "—"}
               td
                 if item.status == "active"
                   a.badge.badge-success(
