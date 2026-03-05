@@ -107,3 +107,17 @@ module.exports.changeMulti = async (req, res) => {
     return res.status(500).send("Server Error");
   }
 };
+
+// [DELETE] /admin/products/delete/:id
+module.exports.deleteItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await Product.deleteOne({ _id: id });
+
+    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products";
+    return res.redirect(backURL);
+  } catch (error) {
+    console.error("deleteItem error:", error);
+    return res.status(500).send("Server Error");
+  }
+};
