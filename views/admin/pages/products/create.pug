@@ -1,0 +1,42 @@
+extends ../../layouts/default.pug
+
+block main
+  h1 Thêm mới sản phẩm
+
+  .card
+    .card-header Thông tin sản phẩm
+    .card-body
+      form(method="POST" action=`${prefixAdmin}/products/create`)
+        .form-group
+          label(for="title") Tiêu đề
+          input#title.form-control(type="text" name="title" placeholder="Nhập tiêu đề" required)
+
+        .form-group
+          label(for="description") Mô tả
+          textarea#description.form-control(name="description" rows="3" placeholder="Nhập mô tả")
+
+        .form-group
+          label(for="price") Giá
+          input#price.form-control(type="number" name="price" min="0" step="0.01" required)
+
+        .form-group
+          label(for="stock") Số lượng
+          input#stock.form-control(type="number" name="stock" min="0" step="1")
+
+        .form-group
+          label(for="thumbnail") Ảnh (link)
+          input#thumbnail.form-control(type="text" name="thumbnail" placeholder="Nhập link ảnh")
+
+        .form-group
+          label Trạng thái
+          select.form-control(name="status" required)
+            option(value="active") Hoạt động
+            option(value="inactive") Dừng hoạt động
+
+        .form-group
+          label(for="position") Vị trí
+          input#position.form-control(type="number" name="position" min="0" step="1" value="0")
+
+        button.btn.btn-primary(type="submit") Lưu sản phẩm
+        a.btn.btn-secondary.ml-2(href=`${prefixAdmin}/products`) Hủy
+

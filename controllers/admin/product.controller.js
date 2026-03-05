@@ -58,6 +58,57 @@ module.exports.index = async (req, res) => {
   }
 };
 
+// [GET] /admin/products/create
+module.exports.create = (req, res) => {
+  try {
+    res.render("admin/pages/products/create", {
+      pageTitle: "Thêm mới sản phẩm",
+      message: req.query.message || "",
+      type: req.query.type || "success"
+    });
+  } catch (error) {
+    console.error("create product page error:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+// [POST] /admin/products/create
+module.exports.createPost = async (req, res) => {
+  try {
+    const { title, description, price, stock, thumbnail, status, position } = req.body;
+
+    if (!title || !price || !status) {
+      return res.redirect(
+        "/admin/products/create?message=Vui lòng nhập đầy đủ Tiêu đề, Giá và Trạng thái&type=error"
+      );
+    }
+
+    const priceNumber = Number(price);
+    const stockNumber = Number(stock || 0);
+    const positionNumber = Number(position || 0);
+
+    await Product.create({
+      title,
+      description,
+      price: isNaN(priceNumber) ? 0 : priceNumber,
+      discountPercentage: 0,
+      stock: isNaN(stockNumber) ? 0 : stockNumber,
+      thumbnail,
+      status,
+      position: isNaN(positionNumber) ? 0 : positionNumber,
+      deleted: false,
+      deleteAt: null
+    });
+
+    return res.redirect(
+      "/admin/products?message=Thêm sản phẩm mới thành công&type=success"
+    );
+  } catch (error) {
+    console.error("createPost error:", error);
+    return res.status(500).send("Server Error");
+  }
+};
+
 // [PACTH] /admin/products/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {

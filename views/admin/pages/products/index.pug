@@ -13,8 +13,9 @@ block main
       .row
         .col-6
           +filter-status(filterStatus)
-        .col-6
+        .col-6.d-flex.justify-content-between
           +search(keyword)
+          a.btn.btn-primary.ml-2(href=`${prefixAdmin}/products/create`) Thêm mới sản phẩm
 
   .card.mb-3
     .card-header Danh Sách

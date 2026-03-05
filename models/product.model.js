@@ -12,6 +12,9 @@ const productSchema = new mongoose.Schema(
         position: Number,
         deleted: Boolean,
         deleteAt: Date
+    },
+    {
+        timestamps: true // createdAt, updatedAt
     }
 );
 
