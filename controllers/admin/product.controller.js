@@ -108,16 +108,65 @@ module.exports.changeMulti = async (req, res) => {
   }
 };
 
-// [DELETE] /admin/products/delete/:id
+// [DELETE] /admin/products/delete/:id (soft delete: set deleted = true, deleteAt = now)
 module.exports.deleteItem = async (req, res) => {
   try {
     const id = req.params.id;
-    await Product.deleteOne({ _id: id });
+    await Product.updateOne(
+      { _id: id },
+      { deleted: true, deleteAt: new Date() }
+    );
 
     const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products";
     return res.redirect(backURL);
   } catch (error) {
     console.error("deleteItem error:", error);
+    return res.status(500).send("Server Error");
+  }
+};
+
+// [GET] /admin/products/trash - Danh sách sản phẩm đã xóa
+module.exports.trash = async (req, res) => {
+  try {
+    const find = { deleted: true };
+
+    const objectSearch = searchHelper(req.query);
+    if (objectSearch.regex) {
+      find.title = objectSearch.regex;
+    }
+
+    const countProducts = await Product.countDocuments(find);
+    const objectPagination = paginationHelper(req.query, countProducts, 4);
+
+    const products = await Product.find(find)
+      .limit(objectPagination.limitItems)
+      .skip(objectPagination.skip);
+
+    res.render("admin/pages/products/trash", {
+      pageTitle: "Thùng rác sản phẩm",
+      products,
+      keyword: objectSearch.keyword,
+      pagination: objectPagination
+    });
+  } catch (error) {
+    console.error("trash error:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+// [PATCH] /admin/products/restore/:id - Khôi phục sản phẩm
+module.exports.restoreItem = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await Product.updateOne(
+      { _id: id },
+      { deleted: false, deleteAt: null }
+    );
+
+    const backURL = req.get("Referrer") || req.get("Referer") || "/admin/products/trash";
+    return res.redirect(backURL);
+  } catch (error) {
+    console.error("restoreItem error:", error);
     return res.status(500).send("Server Error");
   }
 };

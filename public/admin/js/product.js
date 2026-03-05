@@ -94,3 +94,23 @@ if (buttonDelete.length > 0) {
 }
 
 // End Delete Item
+
+// Restore Item (trang thùng rác)
+const buttonsRestore = document.querySelectorAll("[button-restore]");
+if (buttonsRestore.length > 0) {
+  const formRestoreItem = document.querySelector("#form-restore-item");
+  const path = formRestoreItem.getAttribute("data-path");
+  buttonsRestore.forEach(button => {
+    button.addEventListener("click", (e) => {
+      e.preventDefault();
+      const isConfirm = confirm("Bạn có chắc chắn muốn khôi phục sản phẩm này?");
+
+      if (isConfirm) {
+        const id = button.getAttribute("data-id");
+        formRestoreItem.action = `${path}/${id}?_method=PATCH`;
+        formRestoreItem.submit();
+      }
+    });
+  });
+}
+// End Restore Item

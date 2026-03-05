@@ -1,0 +1,63 @@
+extends ../../layouts/default.pug
+include ../../mixins/search.pug
+include ../../mixins/pagination.pug
+
+block main
+  h1 Thùng rác sản phẩm
+
+  .card.mb-3
+    .card-header Tìm kiếm
+    .card-body
+      .row
+        .col-6
+          +search(keyword)
+
+  .card.mb-3
+    .card-header Danh sách đã xóa
+    .card-body
+      table.table.table-bordered
+        thead
+          tr
+            th STT
+            th Hình ảnh
+            th Tiêu đề
+            th Giá
+            th Trạng thái
+            th Ngày xóa
+            th Hành động
+        tbody
+          each item, index in products
+            tr
+              td #{index + 1}
+              td
+                img(src=item.thumbnail alt=item.title width="100px")
+              td #{item.title}
+              td #{item.price}$
+              td
+                if item.status == "active"
+                  span.badge.badge-success Hoạt động
+                else
+                  span.badge.badge-danger Dừng hoạt động
+              td
+                if item.deleteAt
+                  span #{item.deleteAt.toLocaleDateString("vi-VN")}
+                else
+                  span —
+              td
+                button.btn.btn-info.btn-sm(
+                  data-id=item._id
+                  button-restore
+                ) Khôi phục
+
+  +pagination(pagination, "", keyword)
+
+  // Form ẩn khôi phục sản phẩm
+  form(
+    action=""
+    method="POST"
+    id="form-restore-item"
+    data-path=`${prefixAdmin}/products/restore`
+  )
+
+block scripts
+  script(src="/admin/js/product.js")
