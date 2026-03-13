@@ -2,6 +2,7 @@ const Product = require("../../models/product.model");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
+const slugify = require("slugify");
 
 // [GET] /admin/products
 module.exports.index = async (req, res) => {
@@ -87,22 +88,52 @@ module.exports.createPost = async (req, res) => {
     const stockNumber = Number(stock || 0);
     const positionNumber = Number(position || 0);
 
-    await Product.create({
-      title,
-      description,
-      price: isNaN(priceNumber) ? 0 : priceNumber,
-      discountPercentage: 0,
-      stock: isNaN(stockNumber) ? 0 : stockNumber,
-      thumbnail,
-      status,
-      position: isNaN(positionNumber) ? 0 : positionNumber,
-      deleted: false,
-      deleteAt: null
-    });
+    try {
+      const baseSlug = slugify(title || "", {
+        lower: true,
+        strict: true,
+        locale: "vi"
+      });
 
-    return res.redirect(
-      "/admin/products?message=Thêm sản phẩm mới thành công&type=success"
-    );
+      let slug = baseSlug;
+      let suffix = 0;
+
+      while (true) {
+        const exists = await Product.exists({ slug });
+        if (!exists) break;
+        suffix += 1;
+        slug = `${baseSlug}-${suffix}`;
+      }
+
+      await Product.create({
+        title,
+        description,
+        price: isNaN(priceNumber) ? 0 : priceNumber,
+        discountPercentage: 0,
+        stock: isNaN(stockNumber) ? 0 : stockNumber,
+        thumbnail,
+        status,
+        position: isNaN(positionNumber) ? 0 : positionNumber,
+        deleted: false,
+        deleteAt: null,
+        slug
+      });
+
+      return res.redirect(
+        "/admin/products?message=Thêm sản phẩm mới thành công&type=success"
+      );
+    } catch (err) {
+      // Lỗi trùng slug (tiêu đề trùng gây slug trùng)
+      if (err.code === 11000 && err.keyPattern && err.keyPattern.slug) {
+        return res.redirect(
+          "/admin/products/create?message=Tiêu đề đã tồn tại, vui lòng chọn tiêu đề khác&type=error"
+        );
+      }
+      console.error("createPost DB error:", err);
+      return res.redirect(
+        "/admin/products/create?message=Lỗi khi lưu sản phẩm&type=error"
+      );
+    }
   } catch (error) {
     console.error("createPost error:", error);
     return res.status(500).send("Server Error");

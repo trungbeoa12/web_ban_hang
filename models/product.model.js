@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema(
     {
         title: String,
+        slug: String,
         description: String,
         price: Number,
         discountPercentage: Number,
@@ -11,7 +12,8 @@ const productSchema = new mongoose.Schema(
         status: String,
         position: Number,
         deleted: Boolean,
-        deleteAt: Date
+        deleteAt: Date,
+        slug: String
     },
     {
         timestamps: true // createdAt, updatedAt
