@@ -6,7 +6,7 @@ block main
   .card
     .card-header Thông tin sản phẩm
     .card-body
-      form(method="POST" action=`${prefixAdmin}/products/create`)
+      form(method="POST" action=`${prefixAdmin}/products/create` enctype="multipart/form-data")
         .form-group
           label(for="title") Tiêu đề
           input#title.form-control(type="text" name="title" placeholder="Nhập tiêu đề" required)
@@ -24,8 +24,8 @@ block main
           input#stock.form-control(type="number" name="stock" min="0" step="1")
 
         .form-group
-          label(for="thumbnail") Ảnh (link)
-          input#thumbnail.form-control(type="text" name="thumbnail" placeholder="Nhập link ảnh")
+          label(for="thumbnail") Ảnh sản phẩm (upload từ máy)
+          input#thumbnail.form-control(type="file" name="thumbnail" accept="image/*")
 
         .form-group
           label Trạng thái

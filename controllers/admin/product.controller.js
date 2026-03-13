@@ -76,7 +76,7 @@ module.exports.create = (req, res) => {
 // [POST] /admin/products/create
 module.exports.createPost = async (req, res) => {
   try {
-    const { title, description, price, stock, thumbnail, status, position } = req.body;
+    const { title, description, price, stock, status, position } = req.body;
 
     if (!title || !price || !status) {
       return res.redirect(
@@ -105,13 +105,17 @@ module.exports.createPost = async (req, res) => {
         slug = `${baseSlug}-${suffix}`;
       }
 
+      const thumbnailPath = req.file
+        ? `/uploads/products/${req.file.filename}`
+        : "";
+
       await Product.create({
         title,
         description,
         price: isNaN(priceNumber) ? 0 : priceNumber,
         discountPercentage: 0,
         stock: isNaN(stockNumber) ? 0 : stockNumber,
-        thumbnail,
+        thumbnail: thumbnailPath,
         status,
         position: isNaN(positionNumber) ? 0 : positionNumber,
         deleted: false,
