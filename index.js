@@ -19,14 +19,15 @@ app.use(methodOverride("_method"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.set("views", "./views");
+app.set("views", `${__dirname}/views`);
 app.set("view engine", "pug");
 
 // App Locals variable
 app.locals.prefixAdmin = systemConfig.prefixAdmin;
+console.log(__dirname);
 
 
-app.use(express.static("public"));
+app.use(express.static(`${__dirname}/public`));
 
 // Routes
 routeAdmin(app);
