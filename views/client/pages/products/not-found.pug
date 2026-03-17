@@ -1,0 +1,11 @@
+extends ../../layouts/default.pug
+include ../../mixins/box-head.pug
+
+block main
+  .container.my-3
+    .row
+      .col-12
+        +box-head("Không tìm thấy sản phẩm")
+        p.mt-3 Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa.
+        a.btn.btn-secondary.mt-2(href="/products") Quay lại danh sách sản phẩm
+

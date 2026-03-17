@@ -1,0 +1,37 @@
+extends ../../layouts/default.pug
+include ../../mixins/box-head.pug
+
+block main
+  .container.my-3
+    .row
+      .col-12
+        +box-head("Chi tiết sản phẩm")
+
+    .row
+      .col-md-5
+        if product.thumbnail
+          img(src=product.thumbnail alt=product.title style="max-width: 100%;")
+        else
+          p.text-muted Chưa có ảnh
+      .col-md-7
+        h2 #{product.title}
+        if product.description
+          p.mt-2 #{product.description}
+        .mt-3
+          span.font-weight-bold Giá khuyến mãi: 
+          span.text-danger.h4 #{priceNew}$
+        .mt-1
+          span.text-muted Giá gốc: 
+          s #{product.price}$
+          span.badge.badge-success.ml-2 -#{product.discountPercentage}%
+        .mt-3
+          span.font-weight-bold Tình trạng: 
+          if product.stock > 0
+            span.text-success Còn hàng (#{product.stock})
+          else
+            span.text-danger Hết hàng
+
+        .mt-4
+          button.btn.btn-primary.mr-2(type="button") Thêm vào giỏ
+          a.btn.btn-secondary(href="/products") Quay lại danh sách
+
