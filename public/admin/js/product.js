@@ -144,17 +144,81 @@ if (buttonsRestore.length > 0) {
 // Preview ảnh trước khi upload (trang tạo sản phẩm)
 const inputThumbnail = document.querySelector("#thumbnail");
 const imgPreview = document.querySelector("#preview-thumbnail");
+const btnClearThumbnail = document.querySelector("#clear-thumbnail");
+const formCreateProduct = document.querySelector("form[action$='/products/create']");
 
 if (inputThumbnail && imgPreview) {
-  inputThumbnail.addEventListener("change", (evt) => {
-    console.log(evt)
+  inputThumbnail.addEventListener("change", () => {
     const [file] = inputThumbnail.files;
     if (file) {
       imgPreview.src = URL.createObjectURL(file);
       imgPreview.style.display = "block";
+      if (btnClearThumbnail) btnClearThumbnail.style.display = "inline-block";
     } else {
       imgPreview.src = "";
       imgPreview.style.display = "none";
+      if (btnClearThumbnail) btnClearThumbnail.style.display = "none";
+    }
+  });
+}
+
+if (btnClearThumbnail && inputThumbnail && imgPreview) {
+  btnClearThumbnail.addEventListener("click", () => {
+    inputThumbnail.value = "";
+    imgPreview.src = "";
+    imgPreview.style.display = "none";
+    btnClearThumbnail.style.display = "none";
+  });
+}
+
+// Validate form tạo sản phẩm (frontend)
+if (formCreateProduct) {
+  formCreateProduct.addEventListener("submit", (e) => {
+    const titleInput = document.querySelector("#title");
+    const priceInput = document.querySelector("#price");
+    const stockInput = document.querySelector("#stock");
+    const statusSelect = formCreateProduct.querySelector("select[name='status']");
+
+    const title = titleInput ? titleInput.value.trim() : "";
+    const priceVal = priceInput ? priceInput.value.trim() : "";
+    const stockVal = stockInput ? stockInput.value.trim() : "";
+
+    const errors = [];
+
+    if (!title || title.length < 3) {
+      errors.push("Tiêu đề phải có ít nhất 3 ký tự.");
+    }
+
+    const priceNumber = Number(priceVal);
+    if (!priceVal || isNaN(priceNumber) || priceNumber <= 0) {
+      errors.push("Giá phải là số lớn hơn 0.");
+    }
+
+    if (stockVal) {
+      const stockNumber = Number(stockVal);
+      if (isNaN(stockNumber) || stockNumber < 0) {
+        errors.push("Số lượng phải là số không âm.");
+      }
+    }
+
+    if (!statusSelect || !statusSelect.value) {
+      errors.push("Vui lòng chọn trạng thái.");
+    }
+
+    const file = inputThumbnail && inputThumbnail.files ? inputThumbnail.files[0] : null;
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        errors.push("File ảnh không hợp lệ.");
+      }
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSize) {
+        errors.push("Kích thước ảnh tối đa 2MB.");
+      }
+    }
+
+    if (errors.length > 0) {
+      e.preventDefault();
+      alert(errors.join("\n"));
     }
   });
 }

@@ -23,12 +23,15 @@ const upload = multer({ storage });
 router.get('/', controller.index);
 router.get('/trash', controller.trash);
 router.get('/create', controller.create);
+router.get('/edit/:id', controller.edit);
+router.get('/detail/:id', controller.detail);
 
 router.patch('/change-status/:status/:id', controller.changeStatus);
 router.patch('/change-multi', controller.changeMulti);
 router.patch('/restore/:id', controller.restoreItem);
 
 router.post('/create', upload.single("thumbnail"), controller.createPost);
+router.patch('/edit/:id', upload.single("thumbnail"), controller.editPatch);
 
 router.delete('/delete/:id', controller.deleteItem);
 

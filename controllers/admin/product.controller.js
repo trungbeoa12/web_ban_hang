@@ -73,14 +73,54 @@ module.exports.create = (req, res) => {
   }
 };
 
+// [GET] /admin/products/edit/:id
+module.exports.edit = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findOne({ _id: id, deleted: false });
+    if (!product) {
+      return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
+    }
+
+    res.render("admin/pages/products/edit", {
+      pageTitle: "Sửa sản phẩm",
+      product,
+      message: req.query.message || "",
+      type: req.query.type || "success"
+    });
+  } catch (error) {
+    console.error("edit product page error:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+// [GET] /admin/products/detail/:id
+module.exports.detail = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await Product.findOne({ _id: id, deleted: false });
+    if (!product) {
+      return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
+    }
+
+    res.render("admin/pages/products/detail", {
+      pageTitle: "Chi tiết sản phẩm",
+      product
+    });
+  } catch (error) {
+    console.error("detail product page error:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
 // [POST] /admin/products/create
 module.exports.createPost = async (req, res) => {
   try {
     const { title, description, price, stock, status, position } = req.body;
 
-    if (!title || !price || !status) {
+    if (!title || title.trim().length < 3 || !price || !status) {
       return res.redirect(
-        "/admin/products/create?message=Vui lòng nhập đầy đủ Tiêu đề, Giá và Trạng thái&type=error"
+        "/admin/products/create?message=Vui lòng nhập đầy đủ Tiêu đề (>= 3 ký tự), Giá > 0 và Trạng thái&type=error"
       );
     }
 
@@ -140,6 +180,62 @@ module.exports.createPost = async (req, res) => {
     }
   } catch (error) {
     console.error("createPost error:", error);
+    return res.status(500).send("Server Error");
+  }
+};
+
+// [PATCH] /admin/products/edit/:id
+module.exports.editPatch = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { title, description, price, stock, status, position } = req.body;
+
+    if (!title || title.trim().length < 3 || !price || !status) {
+      return res.redirect(
+        `/admin/products/edit/${id}?message=Vui lòng nhập đầy đủ Tiêu đề (>= 3 ký tự), Giá > 0 và Trạng thái&type=error`
+      );
+    }
+
+    const priceNumber = Number(price);
+    const stockNumber = Number(stock || 0);
+    const positionNumber = Number(position || 0);
+
+    const updatedData = {
+      title,
+      description,
+      price: isNaN(priceNumber) ? 0 : priceNumber,
+      stock: isNaN(stockNumber) ? 0 : stockNumber,
+      status,
+      position: isNaN(positionNumber) ? 0 : positionNumber
+    };
+
+    if (req.file) {
+      updatedData.thumbnail = `/uploads/products/${req.file.filename}`;
+    }
+
+    // Nếu đổi title thì cập nhật lại slug, tránh trùng
+    const baseSlug = slugify(title || "", {
+      lower: true,
+      strict: true,
+      locale: "vi"
+    });
+
+    let slug = baseSlug;
+    let suffix = 0;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const exists = await Product.exists({ slug, _id: { $ne: id } });
+      if (!exists) break;
+      suffix += 1;
+      slug = `${baseSlug}-${suffix}`;
+    }
+    updatedData.slug = slug;
+
+    await Product.updateOne({ _id: id }, updatedData);
+
+    return res.redirect("/admin/products?message=Cập nhật sản phẩm thành công&type=success");
+  } catch (error) {
+    console.error("editPatch error:", error);
     return res.status(500).send("Server Error");
   }
 };

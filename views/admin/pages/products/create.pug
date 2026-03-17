@@ -28,7 +28,9 @@ block main
           input#thumbnail.form-control(type="file" name="thumbnail" accept="image/*")
         .form-group
           label Xem trước ảnh
-          img#preview-thumbnail(src="" alt="Preview ảnh" style="max-width: 200px; display: none;")
+          .d-flex.align-items-start
+            img#preview-thumbnail(src="" alt="Preview ảnh" style="max-width: 200px; display: none;")
+            button#clear-thumbnail.btn.btn-sm.btn-outline-danger.ml-2(type="button" style="display: none;") ×
 
         .form-group
           label Trạng thái

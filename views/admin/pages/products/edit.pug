@@ -1,0 +1,57 @@
+extends ../../layouts/default.pug
+
+block main
+  h1 Sửa sản phẩm
+
+  .card
+    .card-header Thông tin sản phẩm
+    .card-body
+      form(method="POST" action=`${prefixAdmin}/products/edit/${product._id}?_method=PATCH` enctype="multipart/form-data")
+        .form-group
+          label(for="title") Tiêu đề
+          input#title.form-control(type="text" name="title" placeholder="Nhập tiêu đề" required value=product.title)
+
+        .form-group
+          label(for="description") Mô tả
+          textarea#description.form-control(name="description" rows="3" placeholder="Nhập mô tả")= product.description
+
+        .form-group
+          label(for="price") Giá
+          input#price.form-control(type="number" name="price" min="0" step="0.01" required value=product.price)
+
+        .form-group
+          label(for="stock") Số lượng
+          input#stock.form-control(type="number" name="stock" min="0" step="1" value=product.stock)
+
+        .form-group
+          label Ảnh hiện tại
+          if product.thumbnail
+            img(src=product.thumbnail alt=product.title style="max-width: 200px; display: block;")
+          else
+            p.text-muted Chưa có ảnh
+
+        .form-group
+          label(for="thumbnail") Ảnh sản phẩm (upload mới nếu muốn đổi)
+          input#thumbnail.form-control(type="file" name="thumbnail" accept="image/*")
+        .form-group
+          label Xem trước ảnh mới
+          .d-flex.align-items-start
+            img#preview-thumbnail(src="" alt="Preview ảnh" style="max-width: 200px; display: none;")
+            button#clear-thumbnail.btn.btn-sm.btn-outline-danger.ml-2(type="button" style="display: none;") ×
+
+        .form-group
+          label Trạng thái
+          select.form-control(name="status" required)
+            option(value="active" selected=product.status === 'active') Hoạt động
+            option(value="inactive" selected=product.status === 'inactive') Dừng hoạt động
+
+        .form-group
+          label(for="position") Vị trí
+          input#position.form-control(type="number" name="position" min="0" step="1" value=product.position || 0)
+
+        button.btn.btn-primary(type="submit") Lưu thay đổi
+        a.btn.btn-secondary.ml-2(href=`${prefixAdmin}/products`) Hủy
+
+block scripts
+  script(src="/admin/js/product.js")
+

@@ -1,0 +1,50 @@
+extends ../../layouts/default.pug
+
+block main
+  h1 Chi tiết sản phẩm
+
+  .card
+    .card-header #{product.title}
+    .card-body
+      .row
+        .col-md-4
+          if product.thumbnail
+            img(src=product.thumbnail alt=product.title style="max-width: 100%;")
+          else
+            p.text-muted Chưa có ảnh
+        .col-md-8
+          dl.row
+            dt.col-sm-3 Tiêu đề
+            dd.col-sm-9 #{product.title}
+
+            dt.col-sm-3 Mô tả
+            dd.col-sm-9 #{product.description || '—'}
+
+            dt.col-sm-3 Giá
+            dd.col-sm-9 #{product.price}$
+
+            dt.col-sm-3 Số lượng
+            dd.col-sm-9 #{product.stock}
+
+            dt.col-sm-3 Trạng thái
+            dd.col-sm-9
+              if product.status === 'active'
+                span.badge.badge-success Hoạt động
+              else
+                span.badge.badge-danger Dừng hoạt động
+
+            dt.col-sm-3 Vị trí
+            dd.col-sm-9 #{product.position !== undefined && product.position !== null ? product.position : '—'}
+
+            dt.col-sm-3 Slug
+            dd.col-sm-9 #{product.slug || '—'}
+
+            dt.col-sm-3 Ngày tạo
+            dd.col-sm-9 #{product.createdAt ? product.createdAt.toLocaleString('vi-VN') : '—'}
+
+            dt.col-sm-3 Cập nhật
+            dd.col-sm-9 #{product.updatedAt ? product.updatedAt.toLocaleString('vi-VN') : '—'}
+
+      a.btn.btn-secondary.mt-3(href=`${prefixAdmin}/products`) Quay lại danh sách
+      a.btn.btn-warning.mt-3.ml-2(href=`${prefixAdmin}/products/edit/${product._id}`) Sửa sản phẩm
+
