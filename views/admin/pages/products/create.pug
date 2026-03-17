@@ -26,6 +26,9 @@ block main
         .form-group
           label(for="thumbnail") Ảnh sản phẩm (upload từ máy)
           input#thumbnail.form-control(type="file" name="thumbnail" accept="image/*")
+        .form-group
+          label Xem trước ảnh
+          img#preview-thumbnail(src="" alt="Preview ảnh" style="max-width: 200px; display: none;")
 
         .form-group
           label Trạng thái
@@ -40,3 +43,5 @@ block main
         button.btn.btn-primary(type="submit") Lưu sản phẩm
         a.btn.btn-secondary.ml-2(href=`${prefixAdmin}/products`) Hủy
 
+block scripts
+  script(src="/admin/js/product.js")

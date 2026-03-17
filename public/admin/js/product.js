@@ -140,3 +140,21 @@ if (buttonsRestore.length > 0) {
   });
 }
 // End Restore Item
+
+// Preview ảnh trước khi upload (trang tạo sản phẩm)
+const inputThumbnail = document.querySelector("#thumbnail");
+const imgPreview = document.querySelector("#preview-thumbnail");
+
+if (inputThumbnail && imgPreview) {
+  inputThumbnail.addEventListener("change", (evt) => {
+    console.log(evt)
+    const [file] = inputThumbnail.files;
+    if (file) {
+      imgPreview.src = URL.createObjectURL(file);
+      imgPreview.style.display = "block";
+    } else {
+      imgPreview.src = "";
+      imgPreview.style.display = "none";
+    }
+  });
+}
