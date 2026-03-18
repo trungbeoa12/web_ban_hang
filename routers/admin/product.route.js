@@ -10,6 +10,7 @@ const upload = multer({ storage });
 router.get('/', controller.index);
 router.get('/trash', controller.trash);
 router.get('/create', controller.create);
+router.get('/debug/cloudinary', controller.debugCloudinary);
 router.get('/edit/:id', controller.edit);
 router.get('/detail/:id', controller.detail);
 

@@ -46,6 +46,10 @@ const getUploadErrorMessage = (error) => {
     return "Thông tin Cloudinary không đúng, vui lòng kiểm tra lại biến môi trường";
   }
 
+  if (message.includes("cloud_name is disabled")) {
+    return "Cloudinary báo cloud_name đang bị disabled hoặc bộ credential không cùng một account";
+  }
+
   if (
     message.includes("file size too large") ||
     message.includes("request entity too large") ||
@@ -127,6 +131,22 @@ module.exports.create = (req, res) => {
   } catch (error) {
     console.error("create product page error:", error);
     res.status(500).send("Server Error");
+  }
+};
+
+// [GET] /admin/products/debug/cloudinary
+module.exports.debugCloudinary = async (req, res) => {
+  try {
+    const info = await cloudinary.getDebugInfo();
+    return res.status(info.ok ? 200 : 500).json(info);
+  } catch (error) {
+    console.error("debugCloudinary error:", error);
+    return res.status(500).json({
+      ok: false,
+      error: {
+        message: error?.message || "Unknown error"
+      }
+    });
   }
 };
 
