@@ -31,9 +31,23 @@ console.log(__dirname);
 
 app.use(express.static(`${__dirname}/public`));
 
+app.use(async (req, res, next) => {
+  try {
+    await database.connect();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Routes
 routeAdmin(app);
 route(app);
+
+app.use((error, req, res, next) => {
+  console.error("Unhandled app error:", error);
+  res.status(500).send("Server Error");
+});
 
 module.exports = app;
 
