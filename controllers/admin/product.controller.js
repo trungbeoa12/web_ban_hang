@@ -26,6 +26,41 @@ const buildSlug = async (title, excludeId = null) => {
   return slug;
 };
 
+const getUploadErrorMessage = (error) => {
+  const rawMessage = error?.message || "";
+  const message = rawMessage.toLowerCase();
+
+  if (
+    message.includes("must supply api_key") ||
+    message.includes("must supply cloud_name") ||
+    message.includes("must supply api_secret")
+  ) {
+    return "Thiếu cấu hình Cloudinary trên môi trường deploy";
+  }
+
+  if (
+    message.includes("invalid signature") ||
+    message.includes("unknown api_key") ||
+    message.includes("authorization required")
+  ) {
+    return "Thông tin Cloudinary không đúng, vui lòng kiểm tra lại biến môi trường";
+  }
+
+  if (
+    message.includes("file size too large") ||
+    message.includes("request entity too large") ||
+    message.includes("payload too large")
+  ) {
+    return "Ảnh tải lên quá lớn, vui lòng chọn ảnh nhỏ hơn";
+  }
+
+  if (message.includes("timeout")) {
+    return "Upload ảnh bị timeout, vui lòng thử lại";
+  }
+
+  return "Lỗi khi upload ảnh lên Cloudinary";
+};
+
 // [GET] /admin/products
 module.exports.index = async (req, res) => {
   try {
@@ -157,12 +192,19 @@ module.exports.createPost = async (req, res) => {
       let thumbnailPublicId = "";
 
       if (req.file && req.file.buffer) {
-        const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
-          folder: "product-management/products",
-          resource_type: "image"
-        });
-        thumbnailPath = uploadResult.secure_url;
-        thumbnailPublicId = uploadResult.public_id;
+        try {
+          const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
+            folder: "product-management/products",
+            resource_type: "image"
+          });
+          thumbnailPath = uploadResult.secure_url;
+          thumbnailPublicId = uploadResult.public_id;
+        } catch (uploadError) {
+          console.error("cloudinary create upload error:", uploadError);
+          return res.redirect(
+            `/admin/products/create?message=${encodeURIComponent(getUploadErrorMessage(uploadError))}&type=error`
+          );
+        }
       }
 
       await Product.create({
@@ -232,15 +274,22 @@ module.exports.editPatch = async (req, res) => {
     }
 
     if (req.file && req.file.buffer) {
-      const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
-        folder: "product-management/products",
-        resource_type: "image"
-      });
-      updatedData.thumbnail = uploadResult.secure_url;
-      updatedData.thumbnailPublicId = uploadResult.public_id;
+      try {
+        const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
+          folder: "product-management/products",
+          resource_type: "image"
+        });
+        updatedData.thumbnail = uploadResult.secure_url;
+        updatedData.thumbnailPublicId = uploadResult.public_id;
 
-      if (currentProduct.thumbnailPublicId) {
-        await cloudinary.destroy(currentProduct.thumbnailPublicId);
+        if (currentProduct.thumbnailPublicId) {
+          await cloudinary.destroy(currentProduct.thumbnailPublicId);
+        }
+      } catch (uploadError) {
+        console.error("cloudinary edit upload error:", uploadError);
+        return res.redirect(
+          `/admin/products/edit/${id}?message=${encodeURIComponent(getUploadErrorMessage(uploadError))}&type=error`
+        );
       }
     }
 
