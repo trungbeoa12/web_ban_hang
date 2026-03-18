@@ -1,23 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
 
 const controller = require("../../controllers/admin/product.controller")
 
-// Cấu hình multer upload ảnh sản phẩm
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join("public", "uploads", "products"));
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext);
-    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `${base}-${unique}${ext}`);
-  }
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.get('/', controller.index);

@@ -9,10 +9,12 @@ const systemConfig = require("./config/system.js")
 const routeAdmin = require("./routers/admin/index.route.js");
 const route = require("./routers/client/index.route.js");
 
-database.connect();
-
 const app = express();
 const port = process.env.PORT;
+
+database.connect().catch((error) => {
+  console.error("Database startup error:", error);
+});
 
 app.use(methodOverride("_method"));
 
@@ -33,6 +35,10 @@ app.use(express.static(`${__dirname}/public`));
 routeAdmin(app);
 route(app);
 
-app.listen(port, () => {
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
-});
+  });
+}

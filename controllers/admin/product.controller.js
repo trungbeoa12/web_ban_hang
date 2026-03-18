@@ -3,6 +3,28 @@ const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
 const slugify = require("slugify");
+const cloudinary = require("../../config/cloudinary");
+
+const buildSlug = async (title, excludeId = null) => {
+  const baseSlug = slugify(title || "", {
+    lower: true,
+    strict: true,
+    locale: "vi"
+  });
+
+  let slug = baseSlug;
+  let suffix = 0;
+
+  while (true) {
+    const query = excludeId ? { slug, _id: { $ne: excludeId } } : { slug };
+    const exists = await Product.exists(query);
+    if (!exists) break;
+    suffix += 1;
+    slug = `${baseSlug}-${suffix}`;
+  }
+
+  return slug;
+};
 
 // [GET] /admin/products
 module.exports.index = async (req, res) => {
@@ -129,25 +151,19 @@ module.exports.createPost = async (req, res) => {
     const positionNumber = Number(position || 0);
 
     try {
-      const baseSlug = slugify(title || "", {
-        lower: true,
-        strict: true,
-        locale: "vi"
-      });
+      const slug = await buildSlug(title);
 
-      let slug = baseSlug;
-      let suffix = 0;
+      let thumbnailPath = "";
+      let thumbnailPublicId = "";
 
-      while (true) {
-        const exists = await Product.exists({ slug });
-        if (!exists) break;
-        suffix += 1;
-        slug = `${baseSlug}-${suffix}`;
+      if (req.file && req.file.buffer) {
+        const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
+          folder: "product-management/products",
+          resource_type: "image"
+        });
+        thumbnailPath = uploadResult.secure_url;
+        thumbnailPublicId = uploadResult.public_id;
       }
-
-      const thumbnailPath = req.file
-        ? `/uploads/products/${req.file.filename}`
-        : "";
 
       await Product.create({
         title,
@@ -156,6 +172,7 @@ module.exports.createPost = async (req, res) => {
         discountPercentage: 0,
         stock: isNaN(stockNumber) ? 0 : stockNumber,
         thumbnail: thumbnailPath,
+        thumbnailPublicId,
         status,
         position: isNaN(positionNumber) ? 0 : positionNumber,
         deleted: false,
@@ -209,27 +226,25 @@ module.exports.editPatch = async (req, res) => {
       position: isNaN(positionNumber) ? 0 : positionNumber
     };
 
-    if (req.file) {
-      updatedData.thumbnail = `/uploads/products/${req.file.filename}`;
+    const currentProduct = await Product.findOne({ _id: id, deleted: false });
+    if (!currentProduct) {
+      return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
     }
 
-    // Nếu đổi title thì cập nhật lại slug, tránh trùng
-    const baseSlug = slugify(title || "", {
-      lower: true,
-      strict: true,
-      locale: "vi"
-    });
+    if (req.file && req.file.buffer) {
+      const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
+        folder: "product-management/products",
+        resource_type: "image"
+      });
+      updatedData.thumbnail = uploadResult.secure_url;
+      updatedData.thumbnailPublicId = uploadResult.public_id;
 
-    let slug = baseSlug;
-    let suffix = 0;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const exists = await Product.exists({ slug, _id: { $ne: id } });
-      if (!exists) break;
-      suffix += 1;
-      slug = `${baseSlug}-${suffix}`;
+      if (currentProduct.thumbnailPublicId) {
+        await cloudinary.destroy(currentProduct.thumbnailPublicId);
+      }
     }
-    updatedData.slug = slug;
+
+    updatedData.slug = await buildSlug(title, id);
 
     await Product.updateOne({ _id: id }, updatedData);
 
