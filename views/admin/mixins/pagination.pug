@@ -1,12 +1,13 @@
-mixin pagination(pagination, status, keyword)
+mixin pagination(pagination, status, keyword, sort)
   if pagination && pagination.totalPage > 1
     - const currentPage = pagination.currentPage
     - const totalPage = pagination.totalPage
 
-    // giữ query (status, keyword)
+    // giữ query (status, keyword, sort)
     - const queryObj = {}
     - if (status) queryObj.status = status
     - if (keyword) queryObj.keyword = keyword
+    - if (sort && sort.currentValue) queryObj.sort = sort.currentValue
 
     nav
       ul.pagination

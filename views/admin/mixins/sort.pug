@@ -1,0 +1,8 @@
+mixin sort(sort)
+  form#form-sort(method="GET")
+    .input-group
+      select.form-control(name="sort")
+        each item in sort.options
+          option(value=item.value selected=(item.value === sort.currentValue)) #{item.label}
+      .input-group-append
+        button.btn.btn-info(type="submit") Sắp xếp

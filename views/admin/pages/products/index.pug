@@ -3,6 +3,7 @@ include ../../mixins/filter-status.pug
 include ../../mixins/search.pug
 include ../../mixins/pagination.pug
 include ../../mixins/bulk-change-status.pug
+include ../../mixins/sort.pug
 
 block main
   h1 Trang danh sách sản phẩm
@@ -11,10 +12,11 @@ block main
     .card-header Bộ lọc và Tìm kiếm
     .card-body
       .row
-        .col-6
+        .col-lg-4.col-md-12.mb-2
           +filter-status(filterStatus)
-        .col-6.d-flex.justify-content-between
+        .col-lg-8.col-md-12.d-flex.justify-content-between.flex-wrap
           +search(keyword)
+          +sort(sort)
           a.btn.btn-primary.ml-2(href=`${prefixAdmin}/products/create`) Thêm mới sản phẩm
 
   .card.mb-3
@@ -41,7 +43,7 @@ block main
             tr
               td
                 input(type="checkbox" name="id" value=item._id class="check-item")
-              td #{index + 1}
+              td #{pagination.skip + index + 1}
               td
                 a(href=`${prefixAdmin}/products/detail/${item._id}`)
                   img(src=item.thumbnail alt=item.title width="100px")
@@ -71,7 +73,7 @@ block main
                   button-delete
                 ) Xóa
 
-  +pagination(pagination, status, keyword)
+  +pagination(pagination, status, keyword, sort)
 
   // Form ẩn change status 1 sản phẩm
   form(

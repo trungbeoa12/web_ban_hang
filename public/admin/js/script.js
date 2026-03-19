@@ -16,6 +16,8 @@ if (buttonsStatus.length > 0) {
                 url.searchParams.delete("status");
             }
 
+            url.searchParams.delete("page");
+
             window.location.href = url.href;
         });
     });
@@ -40,7 +42,34 @@ if (formSearch) {
             url.searchParams.delete("keyword");
         }
 
+        url.searchParams.delete("page");
+
         window.location.href = url.href;
     });
 }
 // ================= END FORM SEARCH =================
+
+
+// ================= FORM SORT =================
+const formSort = document.querySelector("#form-sort");
+
+if (formSort) {
+    formSort.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const sort = e.target.elements.sort.value.trim();
+
+        const url = new URL(window.location.href);
+
+        if (sort) {
+            url.searchParams.set("sort", sort);
+        } else {
+            url.searchParams.delete("sort");
+        }
+
+        url.searchParams.delete("page");
+
+        window.location.href = url.href;
+    });
+}
+// ================= END FORM SORT =================

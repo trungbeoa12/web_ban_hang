@@ -1,11 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
 
-const controller = require("../../controllers/admin/product.controller")
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const controller = require("../../controllers/admin/product.controller");
+const uploadCloudinary = require("../../middleware/admin/uploadCloudinary");
 
 router.get('/', controller.index);
 router.get('/trash', controller.trash);
@@ -18,8 +15,28 @@ router.patch('/change-status/:status/:id', controller.changeStatus);
 router.patch('/change-multi', controller.changeMulti);
 router.patch('/restore/:id', controller.restoreItem);
 
-router.post('/create', upload.single("thumbnail"), controller.createPost);
-router.patch('/edit/:id', upload.single("thumbnail"), controller.editPatch);
+router.post(
+  '/create',
+  uploadCloudinary.single("thumbnail"),
+  uploadCloudinary.uploadImage({
+    fieldName: "thumbnail",
+    folder: "product-management/products",
+    buildErrorRedirect: (req, message) =>
+      `/admin/products/create?message=${encodeURIComponent(message)}&type=error`
+  }),
+  controller.createPost
+);
+router.patch(
+  '/edit/:id',
+  uploadCloudinary.single("thumbnail"),
+  uploadCloudinary.uploadImage({
+    fieldName: "thumbnail",
+    folder: "product-management/products",
+    buildErrorRedirect: (req, message) =>
+      `/admin/products/edit/${req.params.id}?message=${encodeURIComponent(message)}&type=error`
+  }),
+  controller.editPatch
+);
 
 router.delete('/delete/:id', controller.deleteItem);
 

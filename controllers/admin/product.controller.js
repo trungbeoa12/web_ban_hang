@@ -2,6 +2,7 @@ const Product = require("../../models/product.model");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
+const sortHelper = require("../../helpers/sort");
 const slugify = require("slugify");
 const cloudinary = require("../../config/cloudinary");
 
@@ -26,45 +27,6 @@ const buildSlug = async (title, excludeId = null) => {
   return slug;
 };
 
-const getUploadErrorMessage = (error) => {
-  const rawMessage = error?.message || "";
-  const message = rawMessage.toLowerCase();
-
-  if (
-    message.includes("must supply api_key") ||
-    message.includes("must supply cloud_name") ||
-    message.includes("must supply api_secret")
-  ) {
-    return "Thiếu cấu hình Cloudinary trên môi trường deploy";
-  }
-
-  if (
-    message.includes("invalid signature") ||
-    message.includes("unknown api_key") ||
-    message.includes("authorization required")
-  ) {
-    return "Thông tin Cloudinary không đúng, vui lòng kiểm tra lại biến môi trường";
-  }
-
-  if (message.includes("cloud_name is disabled")) {
-    return "Cloudinary báo cloud_name đang bị disabled hoặc bộ credential không cùng một account";
-  }
-
-  if (
-    message.includes("file size too large") ||
-    message.includes("request entity too large") ||
-    message.includes("payload too large")
-  ) {
-    return "Ảnh tải lên quá lớn, vui lòng chọn ảnh nhỏ hơn";
-  }
-
-  if (message.includes("timeout")) {
-    return "Upload ảnh bị timeout, vui lòng thử lại";
-  }
-
-  return "Lỗi khi upload ảnh lên Cloudinary";
-};
-
 // [GET] /admin/products
 module.exports.index = async (req, res) => {
   try {
@@ -81,6 +43,7 @@ module.exports.index = async (req, res) => {
 
     // ===== 3. Search =====
     const objectSearch = searchHelper(req.query);
+    const objectSort = sortHelper(req.query);
 
     if (objectSearch.regex) {
       find.title = objectSearch.regex;
@@ -98,7 +61,7 @@ module.exports.index = async (req, res) => {
 
     // ===== 6. Lấy dữ liệu (sắp xếp theo position) =====
     const products = await Product.find(find)
-      .sort({ position: 1 })
+      .sort(objectSort.sort)
       .limit(objectPagination.limitItems)
       .skip(objectPagination.skip);
 
@@ -108,6 +71,7 @@ module.exports.index = async (req, res) => {
       products,
       filterStatus,
       keyword: objectSearch.keyword,
+      sort: objectSort,
       status: currentStatus,
       pagination: objectPagination,
       message: req.query.message || "",
@@ -208,33 +172,14 @@ module.exports.createPost = async (req, res) => {
     try {
       const slug = await buildSlug(title);
 
-      let thumbnailPath = "";
-      let thumbnailPublicId = "";
-
-      if (req.file && req.file.buffer) {
-        try {
-          const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
-            folder: "product-management/products",
-            resource_type: "image"
-          });
-          thumbnailPath = uploadResult.secure_url;
-          thumbnailPublicId = uploadResult.public_id;
-        } catch (uploadError) {
-          console.error("cloudinary create upload error:", uploadError);
-          return res.redirect(
-            `/admin/products/create?message=${encodeURIComponent(getUploadErrorMessage(uploadError))}&type=error`
-          );
-        }
-      }
-
       await Product.create({
         title,
         description,
         price: isNaN(priceNumber) ? 0 : priceNumber,
         discountPercentage: 0,
         stock: isNaN(stockNumber) ? 0 : stockNumber,
-        thumbnail: thumbnailPath,
-        thumbnailPublicId,
+        thumbnail: req.cloudinaryFile?.secure_url || "",
+        thumbnailPublicId: req.cloudinaryFile?.public_id || "",
         status,
         position: isNaN(positionNumber) ? 0 : positionNumber,
         deleted: false,
@@ -293,23 +238,12 @@ module.exports.editPatch = async (req, res) => {
       return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
     }
 
-    if (req.file && req.file.buffer) {
-      try {
-        const uploadResult = await cloudinary.uploadBuffer(req.file.buffer, {
-          folder: "product-management/products",
-          resource_type: "image"
-        });
-        updatedData.thumbnail = uploadResult.secure_url;
-        updatedData.thumbnailPublicId = uploadResult.public_id;
+    if (req.cloudinaryFile) {
+      updatedData.thumbnail = req.cloudinaryFile.secure_url;
+      updatedData.thumbnailPublicId = req.cloudinaryFile.public_id;
 
-        if (currentProduct.thumbnailPublicId) {
-          await cloudinary.destroy(currentProduct.thumbnailPublicId);
-        }
-      } catch (uploadError) {
-        console.error("cloudinary edit upload error:", uploadError);
-        return res.redirect(
-          `/admin/products/edit/${id}?message=${encodeURIComponent(getUploadErrorMessage(uploadError))}&type=error`
-        );
+      if (currentProduct.thumbnailPublicId) {
+        await cloudinary.destroy(currentProduct.thumbnailPublicId);
       }
     }
 
