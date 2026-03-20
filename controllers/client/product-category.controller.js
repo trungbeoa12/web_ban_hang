@@ -31,6 +31,47 @@ const attachCategoryInfo = async (products) => {
   }));
 };
 
+// [GET] /product-categories
+module.exports.index = async (req, res) => {
+  try {
+    const categories = await ProductCategory.find({
+      deleted: false,
+      status: "active"
+    }).sort({ position: 1, title: 1 });
+
+    const categoryIds = categories.map((item) => String(item._id));
+    const products = await Product.find({
+      product_category_id: { $in: categoryIds },
+      status: "active",
+      deleted: false
+    }).select("title slug thumbnail product_category_id");
+
+    const productMap = new Map();
+
+    products.forEach((item) => {
+      const categoryId = item.product_category_id;
+      if (!productMap.has(categoryId)) {
+        productMap.set(categoryId, []);
+      }
+
+      productMap.get(categoryId).push(item.toObject());
+    });
+
+    const categoriesWithPreview = categories.map((item) => ({
+      ...item.toObject(),
+      products: productMap.get(String(item._id)) || []
+    }));
+
+    res.render("client/pages/product-categories/index", {
+      pageTitle: "Danh mục sản phẩm",
+      categories: categoriesWithPreview
+    });
+  } catch (error) {
+    console.error("client product category index error:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
 // [GET] /product-categories/:slug
 module.exports.detail = async (req, res) => {
   try {

@@ -71,6 +71,7 @@ module.exports.index = async (req, res) => {
   try {
     // ===== 1. Status =====
     const currentStatus = req.query.status || "";
+    const categoryId = (req.query.category || "").trim();
     const filterStatus = filterStatusHelper(req.query);
 
     // ===== 2. Query DB =====
@@ -80,6 +81,10 @@ module.exports.index = async (req, res) => {
       find.status = currentStatus;
     }
 
+    if (categoryId) {
+      find.product_category_id = categoryId;
+    }
+
     // ===== 3. Search =====
     const objectSearch = searchHelper(req.query);
     const objectSort = sortHelper(req.query);
@@ -87,6 +92,13 @@ module.exports.index = async (req, res) => {
     if (objectSearch.regex) {
       find.title = objectSearch.regex;
     }
+
+    const selectedCategory = categoryId
+      ? await ProductCategory.findOne({
+        _id: categoryId,
+        deleted: false
+      }).select("title")
+      : null;
 
     // ===== 4. Count tổng =====
     const countProducts = await Product.countDocuments(find);
@@ -113,6 +125,7 @@ module.exports.index = async (req, res) => {
       keyword: objectSearch.keyword,
       sort: objectSort,
       status: currentStatus,
+      selectedCategory,
       pagination: objectPagination,
       message: req.query.message || "",
       type: req.query.type || "success"

@@ -36,7 +36,8 @@ block main
           each item, index in categories
             tr
               td #{pagination.skip + index + 1}
-              td #{item.title}
+              td
+                a(href=`${prefixAdmin}/products?category=${item._id}`) #{item.title}
               td
                 if item.description
                   != item.description
@@ -60,6 +61,7 @@ block main
                   ) Dừng hoạt động
               td #{item.slug || "—"}
               td
+                a.btn.btn-info.btn-sm(href=`${prefixAdmin}/products?category=${item._id}`) Xem sản phẩm
                 a.btn.btn-warning.btn-sm(href=`${prefixAdmin}/product-categories/edit/${item._id}`) Sửa
                 button.btn.btn-danger.btn-sm.ml-1(
                   data-id=item._id

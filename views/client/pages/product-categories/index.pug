@@ -1,0 +1,35 @@
+extends ../../layouts/default.pug
+include ../../mixins/box-head.pug
+
+block main
+  .container.my-4
+    .row
+      .col-12
+        +box-head("Danh mục sản phẩm")
+
+    .row
+      each category in categories
+        .col-12.mb-4
+          .card.shadow-sm
+            .card-body
+              .d-flex.justify-content-between.align-items-start.flex-wrap.mb-3
+                div
+                  h3.mb-2
+                    a(href=`/product-categories/${category.slug}`) #{category.title}
+                  if category.description
+                    .text-muted.mb-2!= category.description
+                a.btn.btn-outline-primary.mt-2(href=`/product-categories/${category.slug}`) Xem danh mục
+
+              if category.products.length > 0
+                .row
+                  each product in category.products
+                    .col-12.col-sm-6.col-md-4.mb-3
+                      .product-item.shadow-sm.h-100
+                        .inner-image.mb-3
+                          a(href=`/products/${product.slug}`)
+                            img(src=product.thumbnail alt=product.title class="img-fluid")
+                        .inner-content
+                          h3.inner-title.mb-2
+                            a(href=`/products/${product.slug}`) #{product.title}
+              else
+                .alert.alert-secondary.mb-0 Danh mục này hiện chưa có sản phẩm.
