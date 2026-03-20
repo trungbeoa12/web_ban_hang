@@ -16,7 +16,7 @@ block main
       .col-md-7
         h2 #{product.title}
         if product.description
-          p.mt-2 #{product.description}
+          .mt-2!= product.description
         .mt-3
           span.font-weight-bold Giá khuyến mãi: 
           span.text-danger.h4 #{priceNew}$
@@ -34,4 +34,3 @@ block main
         .mt-4
           button.btn.btn-primary.mr-2(type="button") Thêm vào giỏ
           a.btn.btn-secondary(href="/products") Quay lại danh sách
-

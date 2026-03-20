@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require("path");
 const methodOverride = require("method-override");
 require("dotenv").config();
 
@@ -30,6 +31,7 @@ console.log(__dirname);
 
 
 app.use(express.static(`${__dirname}/public`));
+app.use("/tinymce", express.static(path.join(__dirname, "node_modules", "tinymce")));
 
 app.use(async (req, res, next) => {
   try {

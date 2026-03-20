@@ -20,7 +20,8 @@
     "pug": "^3.0.3",
     "slug": "^11.0.1",
     "slugify": "^1.6.6",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "tinymce": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

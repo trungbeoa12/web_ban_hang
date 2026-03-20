@@ -18,7 +18,11 @@ block main
             dd.col-sm-9 #{product.title}
 
             dt.col-sm-3 Mô tả
-            dd.col-sm-9 #{product.description || '—'}
+            dd.col-sm-9
+              if product.description
+                != product.description
+              else
+                | —
 
             dt.col-sm-3 Giá
             dd.col-sm-9 #{product.price}$
@@ -47,4 +51,3 @@ block main
 
       a.btn.btn-secondary.mt-3(href=`${prefixAdmin}/products`) Quay lại danh sách
       a.btn.btn-warning.mt-3.ml-2(href=`${prefixAdmin}/products/edit/${product._id}`) Sửa sản phẩm
-

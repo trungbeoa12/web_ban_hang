@@ -13,7 +13,7 @@ block main
 
         .form-group
           label(for="description") Mô tả
-          textarea#description.form-control(name="description" rows="3" placeholder="Nhập mô tả")= product.description
+          textarea#description.form-control.rich-text-editor(name="description" rows="8" placeholder="Nhập mô tả")= product.description
 
         .form-group
           label(for="price") Giá
@@ -53,5 +53,6 @@ block main
         a.btn.btn-secondary.ml-2(href=`${prefixAdmin}/products`) Hủy
 
 block scripts
+  script(src="/tinymce/tinymce.min.js")
+  script(src="/admin/js/editor.js")
   script(src="/admin/js/product.js")
-
