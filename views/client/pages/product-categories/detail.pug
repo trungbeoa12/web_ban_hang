@@ -5,24 +5,19 @@ block main
   .container.my-4
     .row
       .col-12
-        if selectedCategory
-          +box-head(`Danh Sách Sản Phẩm - ${selectedCategory.title}`)
-        else
-          +box-head("Danh Sách Sản Phẩm")
+        +box-head(category.title)
+        if category.description
+          .mb-4!= category.description
 
     .row.mb-3
       .col-12
-        a.btn.btn-sm.mr-2(
-          href="/products"
-          class=selectedCategory ? "btn-outline-secondary" : "btn-primary"
-        ) Tất cả
-        each category in categories
+        a.btn.btn-sm.btn-outline-secondary.mr-2.mb-2(href="/products") Tất cả sản phẩm
+        each item in categories
           a.btn.btn-sm.mr-2.mb-2(
-            href=`/product-categories/${category.slug}`
-            class=(selectedCategory && selectedCategory.slug === category.slug) ? "btn-primary" : "btn-outline-secondary"
-          ) #{category.title}
+            href=`/product-categories/${item.slug}`
+            class=(item.slug === category.slug) ? "btn-primary" : "btn-outline-secondary"
+          ) #{item.title}
 
-    //- List động
     .row
       each item in products
         .col-12.col-sm-6.col-md-4.mb-4
@@ -42,4 +37,4 @@ block main
                 .inner-discount #{item.discountPercentage}%
       if products.length === 0
         .col-12
-          .alert.alert-secondary Không có sản phẩm trong danh mục này.
+          .alert.alert-secondary Danh mục này hiện chưa có sản phẩm.

@@ -15,6 +15,9 @@ block main
           p.text-muted Chưa có ảnh
       .col-md-7
         h2 #{product.title}
+        if category
+          .mb-2
+            a.badge.badge-info(href=`/product-categories/${category.slug}`) #{category.title}
         if product.description
           .mt-2!= product.description
         .mt-3

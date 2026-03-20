@@ -1,0 +1,34 @@
+extends ../../layouts/default.pug
+
+block main
+  h1 Thêm danh mục sản phẩm
+
+  .card
+    .card-header Thông tin danh mục
+    .card-body
+      form#form-product-category(method="POST" action=`${prefixAdmin}/product-categories/create`)
+        .form-group
+          label(for="title") Tên danh mục
+          input#title.form-control(type="text" name="title" placeholder="Nhập tên danh mục" required)
+
+        .form-group
+          label(for="description") Mô tả
+          textarea#description.form-control.rich-text-editor(name="description" rows="8" placeholder="Nhập mô tả danh mục")
+
+        .form-group
+          label Trạng thái
+          select.form-control(name="status" required)
+            option(value="active") Hoạt động
+            option(value="inactive") Dừng hoạt động
+
+        .form-group
+          label(for="position") Vị trí
+          input#position.form-control(type="number" name="position" min="0" step="1" value="0")
+
+        button.btn.btn-primary(type="submit") Lưu danh mục
+        a.btn.btn-secondary.ml-2(href=`${prefixAdmin}/product-categories`) Hủy
+
+block scripts
+  script(src="/tinymce/tinymce.min.js")
+  script(src="/admin/js/editor.js")
+  script(src="/admin/js/product-category.js")

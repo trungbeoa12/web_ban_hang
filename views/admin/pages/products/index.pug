@@ -34,6 +34,7 @@ block main
             th STT
             th Hình ảnh
             th Tiêu đề
+            th Danh mục
             th Giá
             th Vị trí
             th Trạng thái
@@ -49,6 +50,7 @@ block main
                   img(src=item.thumbnail alt=item.title width="100px")
               td 
                 a(href=`${prefixAdmin}/products/detail/${item._id}`) #{item.title}
+              td #{item.categoryTitle || "—"}
               td #{item.price}$
               td #{item.position !== undefined && item.position !== null && item.position !== "" ? item.position : "—"}
               td

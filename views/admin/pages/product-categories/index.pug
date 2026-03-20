@@ -1,0 +1,86 @@
+extends ../../layouts/default.pug
+include ../../mixins/search.pug
+include ../../mixins/pagination.pug
+
+block main
+  h1 Trang danh mục sản phẩm
+
+  .card.mb-3
+    .card-header Bộ lọc và tìm kiếm
+    .card-body
+      .row
+        .col-lg-4.col-md-12.mb-2
+          each item in filterStatus
+            button(
+              class=`btn btn-sm ml-1 btn-outline-success ${item.class}`
+              button-status=item.status
+            ) #{item.name}
+        .col-lg-8.col-md-12.d-flex.justify-content-between.flex-wrap
+          +search(keyword)
+          a.btn.btn-primary.ml-2(href=`${prefixAdmin}/product-categories/create`) Thêm danh mục
+
+  .card
+    .card-header Danh sách danh mục
+    .card-body
+      table.table.table-bordered
+        thead
+          tr
+            th STT
+            th Tên danh mục
+            th Mô tả
+            th Vị trí
+            th Trạng thái
+            th Slug
+            th Hành động
+        tbody
+          each item, index in categories
+            tr
+              td #{pagination.skip + index + 1}
+              td #{item.title}
+              td
+                if item.description
+                  != item.description
+                else
+                  | —
+              td #{item.position !== undefined && item.position !== null ? item.position : "—"}
+              td
+                if item.status == "active"
+                  a.badge.badge-success(
+                    href="javascript:;"
+                    data-status=item.status
+                    data-id=item._id
+                    button-change-status
+                  ) Hoạt động
+                else
+                  a.badge.badge-danger(
+                    href="javascript:;"
+                    data-status=item.status
+                    data-id=item._id
+                    button-change-status
+                  ) Dừng hoạt động
+              td #{item.slug || "—"}
+              td
+                a.btn.btn-warning.btn-sm(href=`${prefixAdmin}/product-categories/edit/${item._id}`) Sửa
+                button.btn.btn-danger.btn-sm.ml-1(
+                  data-id=item._id
+                  button-delete
+                ) Xóa
+
+  +pagination(pagination, status, keyword)
+
+  form(
+    action=""
+    method="POST"
+    id="form-change-status"
+    data-path=`${prefixAdmin}/product-categories/change-status`
+  )
+
+  form(
+    action=""
+    method="POST"
+    id="form-delete-item"
+    data-path=`${prefixAdmin}/product-categories/delete`
+  )
+
+block scripts
+  script(src="/admin/js/product-category.js")

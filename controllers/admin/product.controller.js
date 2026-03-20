@@ -1,4 +1,5 @@
 const Product = require("../../models/product.model");
+const ProductCategory = require("../../models/product-category.model");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
@@ -25,6 +26,44 @@ const buildSlug = async (title, excludeId = null) => {
   }
 
   return slug;
+};
+
+const getCategoriesForForm = async () => {
+  return ProductCategory.find({ deleted: false }).sort({
+    position: 1,
+    title: 1
+  });
+};
+
+const attachCategoryInfo = async (products) => {
+  const categoryIds = [
+    ...new Set(
+      products
+        .map((item) => item.product_category_id)
+        .filter(Boolean)
+    )
+  ];
+
+  if (categoryIds.length === 0) {
+    return products.map((item) => ({
+      ...item.toObject(),
+      categoryTitle: ""
+    }));
+  }
+
+  const categories = await ProductCategory.find({
+    _id: { $in: categoryIds },
+    deleted: false
+  }).select("title");
+
+  const categoryMap = new Map(
+    categories.map((item) => [String(item._id), item.title])
+  );
+
+  return products.map((item) => ({
+    ...item.toObject(),
+    categoryTitle: categoryMap.get(item.product_category_id) || ""
+  }));
 };
 
 // [GET] /admin/products
@@ -64,11 +103,12 @@ module.exports.index = async (req, res) => {
       .sort(objectSort.sort)
       .limit(objectPagination.limitItems)
       .skip(objectPagination.skip);
+    const productsWithCategory = await attachCategoryInfo(products);
 
     // ===== 7. Render =====
     res.render("admin/pages/products/index", {
       pageTitle: "Danh sach san pham",
-      products,
+      products: productsWithCategory,
       filterStatus,
       keyword: objectSearch.keyword,
       sort: objectSort,
@@ -85,10 +125,12 @@ module.exports.index = async (req, res) => {
 };
 
 // [GET] /admin/products/create
-module.exports.create = (req, res) => {
+module.exports.create = async (req, res) => {
   try {
+    const categories = await getCategoriesForForm();
     res.render("admin/pages/products/create", {
       pageTitle: "Thêm mới sản phẩm",
+      categories,
       message: req.query.message || "",
       type: req.query.type || "success"
     });
@@ -122,10 +164,12 @@ module.exports.edit = async (req, res) => {
     if (!product) {
       return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
     }
+    const categories = await getCategoriesForForm();
 
     res.render("admin/pages/products/edit", {
       pageTitle: "Sửa sản phẩm",
       product,
+      categories,
       message: req.query.message || "",
       type: req.query.type || "success"
     });
@@ -143,10 +187,19 @@ module.exports.detail = async (req, res) => {
     if (!product) {
       return res.redirect("/admin/products?message=Không tìm thấy sản phẩm&type=error");
     }
+    const category = product.product_category_id
+      ? await ProductCategory.findOne({
+        _id: product.product_category_id,
+        deleted: false
+      }).select("title")
+      : null;
 
     res.render("admin/pages/products/detail", {
       pageTitle: "Chi tiết sản phẩm",
-      product
+      product: {
+        ...product.toObject(),
+        categoryTitle: category?.title || ""
+      }
     });
   } catch (error) {
     console.error("detail product page error:", error);
@@ -157,7 +210,7 @@ module.exports.detail = async (req, res) => {
 // [POST] /admin/products/create
 module.exports.createPost = async (req, res) => {
   try {
-    const { title, description, price, stock, status, position } = req.body;
+    const { title, description, product_category_id, price, stock, status, position } = req.body;
 
     if (!title || title.trim().length < 3 || !price || !status) {
       return res.redirect(
@@ -175,6 +228,7 @@ module.exports.createPost = async (req, res) => {
       await Product.create({
         title,
         description,
+        product_category_id: product_category_id || "",
         price: isNaN(priceNumber) ? 0 : priceNumber,
         discountPercentage: 0,
         stock: isNaN(stockNumber) ? 0 : stockNumber,
@@ -212,7 +266,7 @@ module.exports.createPost = async (req, res) => {
 module.exports.editPatch = async (req, res) => {
   try {
     const id = req.params.id;
-    const { title, description, price, stock, status, position } = req.body;
+    const { title, description, product_category_id, price, stock, status, position } = req.body;
 
     if (!title || title.trim().length < 3 || !price || !status) {
       return res.redirect(
@@ -227,6 +281,7 @@ module.exports.editPatch = async (req, res) => {
     const updatedData = {
       title,
       description,
+      product_category_id: product_category_id || "",
       price: isNaN(priceNumber) ? 0 : priceNumber,
       stock: isNaN(stockNumber) ? 0 : stockNumber,
       status,
